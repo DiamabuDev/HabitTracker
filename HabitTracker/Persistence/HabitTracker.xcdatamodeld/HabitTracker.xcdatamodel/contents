@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22758" systemVersion="23F79" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="HabitEntity" representedClassName="HabitEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="category" optional="NO" attributeType="String"/>
+        <attribute name="color" optional="NO" attributeType="String"/>
+        <attribute name="createdAt" optional="NO" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="descriptionText" optional="YES" attributeType="String"/>
+        <attribute name="frequency" optional="NO" attributeType="String"/>
+        <attribute name="goal" optional="NO" attributeType="Integer 16" defaultValueString="1" usesScalarValueType="YES"/>
+        <attribute name="icon" optional="NO" attributeType="String"/>
+        <attribute name="id" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" optional="NO" attributeType="String"/>
+        <attribute name="reminderEnabled" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="reminderTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="targetDays" optional="NO" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformer" customClassName="[Int]"/>
+        <attribute name="timeOfDay" optional="YES" attributeType="String"/>
+        <relationship name="logs" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="HabitLogEntity" inverseName="habit" inverseEntity="HabitLogEntity"/>
+    </entity>
+    <entity name="HabitLogEntity" representedClassName="HabitLogEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="completed" optional="NO" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="date" optional="NO" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="note" optional="YES" attributeType="String"/>
+        <relationship name="habit" optional="NO" maxCount="1" deletionRule="Nullify" destinationEntity="HabitEntity" inverseName="logs" inverseEntity="HabitEntity"/>
+    </entity>
+</model>

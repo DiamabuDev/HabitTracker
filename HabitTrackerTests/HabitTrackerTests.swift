@@ -7,10 +7,18 @@
 
 import Testing
 
+/// Main test suite for HabitTracker app
+///
+/// This file serves as the entry point for the test suite.
+/// Individual test files:
+/// - HabitModelTests.swift: Tests for data models (Habit, HabitLog, Date extensions)
+/// - HabitViewModelTests.swift: Tests for ViewModel business logic
+/// - CoreDataManagerTests.swift: Tests for Core Data persistence layer
 struct HabitTrackerTests {
 
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+    @Test func appTestSuiteAvailable() async throws {
+        // This test ensures the test suite is properly configured
+        #expect(true)
     }
 
 }
