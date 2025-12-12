@@ -1,5 +1,5 @@
 //
-//  WeeklyHabitCardView.swift
+//  WeeklyHabitCard.swift
 //  HabitTracker
 //
 //  Created by Diana Maldonado on 2025-12-10.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct WeeklyHabitCardView: View {
+struct WeeklyHabitCard: View {
     let habit: Habit
     @ObservedObject var viewModel: HabitViewModel
 
@@ -94,7 +94,7 @@ struct WeeklyHabitCardView: View {
 }
 
 #Preview {
-    WeeklyHabitCardView(
+    WeeklyHabitCard(
         habit: Habit(name: "Meditation", icon: "🧘", color: "green"),
         viewModel: HabitViewModel()
     )

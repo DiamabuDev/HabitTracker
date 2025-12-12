@@ -56,8 +56,8 @@ struct HomeView: View {
                         .padding(.vertical, 10)
                         .background(
                             homeVM.selectedTab == tab
-                            ? Color(red: 0.42, green: 0.39, blue: 1.0)
-                            : Color.gray.opacity(0.1)
+                            ? .primaryPurple
+                            : .gray.opacity(0.1)
                         )
                         .cornerRadius(12)
                 }
@@ -171,7 +171,7 @@ struct HomeView: View {
     private var weeklyView: some View {
         VStack(spacing: 16) {
             ForEach(homeVM.allHabits) { habit in
-                WeeklyHabitCardView(habit: habit, viewModel: homeVM.habitViewModel)
+                WeeklyHabitCard(habit: habit, viewModel: homeVM.habitViewModel)
             }
             if homeVM.allHabits.isEmpty { emptyStateView }
         }

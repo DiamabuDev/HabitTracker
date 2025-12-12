@@ -84,7 +84,7 @@ struct SettingsView: View {
             } message: {
                 Text("deleteHabitConfirmMessage")
             }
-            .alert("clearAllDataTitle", isPresented: $showClearDataAlert) {
+            .alert("clearAllData", isPresented: $showClearDataAlert) {
                 Button("cancel", role: .cancel) {}
                 Button("clear", role: .destructive) {
                     viewModel.clearAllData()

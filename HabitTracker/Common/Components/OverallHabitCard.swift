@@ -11,21 +11,75 @@ struct OverallHabitCard: View {
     let habit: Habit
     @ObservedObject var viewModel: HabitViewModel
 
-    // MARK: - Layout Constants
+    // Mon..Sun labels (same as WeeklyHabitCard)
+    private let weekdaysKeys: [LocalizedStringKey] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 
-    private enum Layout {
-        static let columns = 16
-        static let rows = 7
-        static let weekLabelWidth: CGFloat = 12
-        static let dotSize: CGFloat = 8
-        static let rowSpacing: CGFloat = 4
-        static let headerSpacing: CGFloat = 12.0
-    }
+    // 4 rows (weeks) x 7 cols (days)
+    private let weeksToShow = 4
+    private let columns = 7
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Layout.headerSpacing) {
-            header
-            dotGrid
+        VStack(alignment: .leading, spacing: 12) {
+            // Header
+            HStack {
+                Text(habit.icon.contains(".") ? "⭐️" : habit.icon)
+                    .font(.system(size: 24))
+
+                Text(habit.name)
+                    .font(.body)
+                    .fontWeight(.medium)
+
+                Spacer()
+
+                Text(frequencyText)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+
+            // Weekday labels (single row)
+            HStack(spacing: 8) {
+                ForEach(0..<columns, id: \.self) { index in
+                    Text(weekdaysKeys[index])
+                        .font(.caption2)
+                        .foregroundColor(.gray)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+
+            // 4-week grid (circles only)
+            VStack(spacing: 10) {
+                ForEach(0..<weeksToShow, id: \.self) { weekRow in
+                    HStack(spacing: 8) {
+                        ForEach(0..<columns, id: \.self) { weekdayIndex in
+                            let date = dateForCell(weekRow: weekRow, weekdayIndex: weekdayIndex)
+                            let isCompleted = viewModel.isHabitCompleted(habit, on: date)
+                            let isFuture = isFutureDate(date)
+
+                            Button {
+                                guard !isFuture else { return }
+                                withAnimation {
+                                    viewModel.toggleHabit(habit, for: date)
+                                }
+                            } label: {
+                                ZStack {
+                                    Circle()
+                                        .fill(circleFill(isCompleted: isCompleted, isFuture: isFuture))
+                                        .frame(width: 28, height: 28)
+
+                                    if isCompleted && !isFuture {
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 11, weight: .bold))
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(isFuture)
+                        }
+                    }
+                }
+            }
         }
         .padding()
         .background(Color.white)
@@ -33,84 +87,42 @@ struct OverallHabitCard: View {
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
 
-    // MARK: - Subviews
-
-    private var header: some View {
-        HStack {
-            // Emoji Icon
-            Text(habit.icon.contains(".") ? "⭐️" : habit.icon)
-                .font(.system(size: 24))
-
-            Text(habit.name)
-                .font(.body)
-                .fontWeight(.medium)
-
-            Spacer()
-
-            // Use the localized key from HabitFrequency
-            Text(habit.frequency.localizationKey)
-                .font(.caption)
-                .foregroundColor(.gray)
-        }
-    }
-
-    private var dotGrid: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            weekHeaderRow
-
-            ForEach(0..<Layout.rows, id: \.self) { row in
-                HStack(spacing: Layout.rowSpacing) {
-                    weekIndexLabel(for: row)
-
-                    ForEach(0..<Layout.columns, id: \.self) { col in
-                        let totalDaysBack = totalDaysBackForCell(row: row, col: col)
-                        let date = Date().daysAgo(totalDaysBack)
-                        let isCompleted = viewModel.isHabitCompleted(habit, on: date)
-                        let isFuture = date > Date()
-
-                        Circle()
-                            .fill(dotColor(isCompleted: isCompleted, isFuture: isFuture))
-                            .frame(width: Layout.dotSize, height: Layout.dotSize)
-                    }
-                }
-            }
-        }
-    }
-
-    private var weekHeaderRow: some View {
-        HStack(spacing: 0) {
-            Text("weekdayW") // Localized single-letter 'W'
-                .font(.system(size: 8))
-                .foregroundColor(.gray)
-                .frame(width: Layout.weekLabelWidth)
-
-            ForEach(0..<Layout.columns, id: \.self) { _ in
-                Color.clear
-                    .frame(width: 16, height: 1)
-            }
-        }
-    }
-
-    private func weekIndexLabel(for row: Int) -> some View {
-        Text("\(row + 1)")
-            .font(.system(size: 8))
-            .foregroundColor(.gray)
-            .frame(width: Layout.weekLabelWidth)
-    }
-
-    // MARK: - Helpers
-
-    private func totalDaysBackForCell(row: Int, col: Int) -> Int {
-        // from bottom-right = today, moving left & up
-        (Layout.rows - 1 - row) * Layout.columns + (Layout.columns - 1 - col)
-    }
-
-    private func dotColor(isCompleted: Bool, isFuture: Bool) -> Color {
-        if isFuture {
-            return Color.gray.opacity(0.1)
+    // MARK: - Frequency label (same behavior as WeeklyHabitCard)
+    private var frequencyText: LocalizedStringKey {
+        if habit.targetDays.count == 7 {
+            return "everyday"
         } else {
-            return isCompleted ? habit.colorValue : Color.gray.opacity(0.2)
+            return LocalizedStringKey(
+                String(format: String(localized: "daysPerWeekFormat"), habit.targetDays.count)
+            )
         }
+    }
+
+    // MARK: - Date helpers
+
+    /// weekRow: 0 = oldest week, 3 = current week
+    /// weekdayIndex: 0..6 (Mon..Sun)
+    private func dateForCell(weekRow: Int, weekdayIndex: Int) -> Date {
+        let today = Date().startOfDay
+        let startOfThisWeek = today.startOfWeekMonday()
+
+        // weekRow: 0..3 where 3 is current week
+        let weeksFromCurrent = weekRow - (weeksToShow - 1) // -3, -2, -1, 0
+        let daysOffset = weeksFromCurrent * 7 + weekdayIndex
+
+        // uses your Date.offsetBy(days:)
+        return startOfThisWeek.offsetBy(days: daysOffset).startOfDay
+    }
+
+    private func isFutureDate(_ date: Date) -> Bool {
+        date.startOfDay > Date().startOfDay
+    }
+
+    private func circleFill(isCompleted: Bool, isFuture: Bool) -> Color {
+        if isFuture {
+            return Color.gray.opacity(0.08)
+        }
+        return isCompleted ? habit.colorValue : Color.gray.opacity(0.12)
     }
 }
 
