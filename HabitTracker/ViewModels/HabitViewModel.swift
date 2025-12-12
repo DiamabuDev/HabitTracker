@@ -44,6 +44,12 @@ class HabitViewModel: ObservableObject {
         coreData.deleteHabit(habit)
         loadData()
     }
+    
+    func clearAllData() {
+        CoreDataManager.shared.clearAll()
+        loadData()
+    }
+
 
     // MARK: - Log Operations
 
@@ -149,5 +155,29 @@ class HabitViewModel: ObservableObject {
 
     func habitsByCategory(_ category: HabitCategory) -> [Habit] {
         habits.filter { $0.category == category }
+    }
+    
+    
+}
+
+extension HabitViewModel {
+    func habits(on date: Date) -> [Habit] {
+        habits.filter { habit in
+            habit.targetDays.contains(date.dayOfWeek)
+        }
+    }
+
+    func completedCount(on date: Date) -> Int {
+        habits(on: date).filter { isHabitCompleted($0, on: date) }.count
+    }
+
+    func totalCount(on date: Date) -> Int {
+        habits(on: date).count
+    }
+
+    func completionRate(on date: Date) -> Double {
+        let total = totalCount(on: date)
+        guard total > 0 else { return 0 }
+        return Double(completedCount(on: date)) / Double(total)
     }
 }

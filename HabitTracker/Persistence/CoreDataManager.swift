@@ -44,6 +44,26 @@ class CoreDataManager {
         }
     }
 
+    // MARK: - Clear All Data
+
+    func clearAll() {
+        let logFetch: NSFetchRequest<NSFetchRequestResult> = HabitLogEntity.fetchRequest()
+        let habitFetch: NSFetchRequest<NSFetchRequestResult> = HabitEntity.fetchRequest()
+
+        let logDelete = NSBatchDeleteRequest(fetchRequest: logFetch)
+        let habitDelete = NSBatchDeleteRequest(fetchRequest: habitFetch)
+
+        do {
+            // Delete logs first to satisfy relationships if cascade isn't set
+            try context.execute(logDelete)
+            try context.execute(habitDelete)
+            try context.save()
+            print("🗑️ Cleared all Core Data (habits and logs)")
+        } catch {
+            print("❌ Error clearing Core Data: \(error.localizedDescription)")
+        }
+    }
+
     // MARK: - Habit Operations
 
     func createHabit(from habit: Habit) -> HabitEntity {

@@ -1,5 +1,5 @@
 //
-//  AddHabitViewModel.swift
+//  HabitFormViewModel.swift
 //  HabitTracker
 //
 //  Created by Diana Maldonado on 2025-12-10.
@@ -10,7 +10,7 @@ import SwiftUI
 import Combine
 
 
-class AddHabitViewModel: ObservableObject {
+class HabitFormViewModel: ObservableObject {
     private let appViewModel: HabitViewModel
 
     @Published var habitType: HabitType = .regular

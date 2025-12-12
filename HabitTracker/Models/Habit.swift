@@ -87,66 +87,6 @@ struct Habit: Identifiable, Codable, Hashable {
     }
 }
 
-enum TimeOfDay: String, Codable, CaseIterable {
-    case morning = "Morning"
-    case afternoon = "Afternoon"
-    case evening = "Evening"
-}
-
-enum HabitCategory: String, Codable, CaseIterable {
-    case health = "Health"
-    case fitness = "Fitness"
-    case productivity = "Productivity"
-    case mindfulness = "Mindfulness"
-    case learning = "Learning"
-    case social = "Social"
-    case creativity = "Creativity"
-    case finance = "Finance"
-    case other = "Other"
-
-    var icon: String {
-        switch self {
-        case .health: return "heart.fill"
-        case .fitness: return "figure.run"
-        case .productivity: return "checkmark.circle.fill"
-        case .mindfulness: return "brain.head.profile"
-        case .learning: return "book.fill"
-        case .social: return "person.2.fill"
-        case .creativity: return "paintbrush.fill"
-        case .finance: return "dollarsign.circle.fill"
-        case .other: return "star.fill"
-        }
-    }
-
-    var color: Color {
-        switch self {
-        case .health: return .red
-        case .fitness: return .orange
-        case .productivity: return .blue
-        case .mindfulness: return .purple
-        case .learning: return .green
-        case .social: return .pink
-        case .creativity: return .yellow
-        case .finance: return .cyan
-        case .other: return .gray
-        }
-    }
-}
-
-enum HabitFrequency: String, Codable, CaseIterable {
-    case daily = "Daily"
-    case weekly = "Weekly"
-    case custom = "Custom"
-
-    var description: String {
-        switch self {
-        case .daily: return "Every day"
-        case .weekly: return "Every week"
-        case .custom: return "Custom days"
-        }
-    }
-}
-
 struct HabitLog: Identifiable, Codable {
     var id: UUID
     var habitId: UUID
@@ -169,17 +109,3 @@ struct HabitLog: Identifiable, Codable {
     }
 }
 
-// Extension for date comparison
-extension Date {
-    var startOfDay: Date {
-        Calendar.current.startOfDay(for: self)
-    }
-
-    func isSameDay(as date: Date) -> Bool {
-        Calendar.current.isDate(self, inSameDayAs: date)
-    }
-
-    var dayOfWeek: Int {
-        Calendar.current.component(.weekday, from: self) - 1
-    }
-}

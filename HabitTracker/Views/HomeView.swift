@@ -8,86 +8,56 @@
 import SwiftUI
 
 struct HomeView: View {
-    @ObservedObject var viewModel: HabitViewModel
-    @State private var selectedTab: HomeTab = .today
-    @State private var selectedTimeFilter: TimeOfDay? = nil
-    @State private var showAddHabit = false
+    @ObservedObject var habitVM: HabitViewModel
+    @StateObject private var homeVM: HomeViewModel
+
+    init(habitVM: HabitViewModel, nav: NavCoordinator) {
+        self._habitVM = ObservedObject(initialValue: habitVM)
+        self._homeVM = StateObject(wrappedValue: HomeViewModel(habitViewModel: habitVM, navCoordinator: nav))
+    }
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.white
-                    .ignoresSafeArea()
+        ZStack {
+            Color.white.ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    // Top Tabs
-                    topTabsView
+            VStack(spacing: 0) {
+                MainTitle(title: "home")
 
-                    ScrollView {
-                        VStack(spacing: 16) {
-                            // Content based on selected tab
-                            switch selectedTab {
-                            case .today:
-                                todayView
-                            case .weekly:
-                                weeklyView
-                            case .overall:
-                                overallView
-                            }
+                topTabsView
+
+                ScrollView {
+                    VStack(spacing: 16) {
+                        switch homeVM.selectedTab {
+                        case .today: todayView
+                        case .weekly: weeklyView
+                        case .overall: overallView
                         }
-                        .padding()
                     }
-                }
-
-                // Floating Add Button
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Button {
-                            showAddHabit = true
-                        } label: {
-                            Image(systemName: "plus")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                                .frame(width: 56, height: 56)
-                                .background(Color(red: 0.42, green: 0.39, blue: 1.0)) // Purple
-                                .clipShape(Circle())
-                                .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
-                        }
-                        .padding(.trailing, 20)
-                        .padding(.bottom, 20)
-                    }
+                    .padding()
                 }
             }
-            .navigationTitle(Text("home"))
-            .sheet(isPresented: $showAddHabit) {
-                AddHabitView(viewModel: viewModel)
-            }
+
+            floatingAddButton
         }
     }
 
     // MARK: - Top Tabs
-
     private var topTabsView: some View {
         HStack(spacing: 12) {
             ForEach(HomeTab.allCases, id: \.self) { tab in
                 Button {
-                    withAnimation {
-                        selectedTab = tab
-                    }
+                    withAnimation { homeVM.selectedTab = tab }
                 } label: {
                     Text(tab.localizationKey)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundColor(selectedTab == tab ? .white : .primary)
+                        .foregroundColor(homeVM.selectedTab == tab ? .white : .primary)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 10)
                         .background(
-                            selectedTab == tab
-                                ? Color(red: 0.42, green: 0.39, blue: 1.0)
-                                : Color.gray.opacity(0.1)
+                            homeVM.selectedTab == tab
+                            ? Color(red: 0.42, green: 0.39, blue: 1.0)
+                            : Color.gray.opacity(0.1)
                         )
                         .cornerRadius(12)
                 }
@@ -97,53 +67,35 @@ struct HomeView: View {
     }
 
     // MARK: - Today View
-
     private var todayView: some View {
         VStack(spacing: 16) {
-            // Time Filter Chips
             timeFilterChips
-
-            // Progress Bar
             progressBar
 
-            // Active Habits
-            let activeHabits = filteredTodayHabits.filter { !viewModel.isHabitCompleted($0) }
-            if !activeHabits.isEmpty {
-                ForEach(activeHabits) { habit in
-                    HabitCardView(
-                        habit: habit,
-                        isCompleted: false
-                    ) {
-                        withAnimation {
-                            viewModel.toggleHabit(habit)
-                        }
+            if !homeVM.activeHabits.isEmpty {
+                ForEach(homeVM.activeHabits) { habit in
+                    HabitCard(habit: habit, isCompleted: false) {
+                        withAnimation { homeVM.toggleHabit(habit) }
                     }
                 }
             }
 
-            // Completed Section
-            let completedHabits = filteredTodayHabits.filter { viewModel.isHabitCompleted($0) }
-            if !completedHabits.isEmpty {
+            if !homeVM.completedHabits.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("completed")
                         .font(.subheadline)
                         .foregroundColor(.gray)
                         .padding(.horizontal, 4)
 
-                    ForEach(completedHabits) { habit in
-                        HabitCardView(
-                            habit: habit,
-                            isCompleted: true
-                        ) {
-                            withAnimation {
-                                viewModel.toggleHabit(habit)
-                            }
+                    ForEach(homeVM.completedHabits) { habit in
+                        HabitCard(habit: habit, isCompleted: true) {
+                            withAnimation { homeVM.toggleHabit(habit) }
                         }
                     }
                 }
             }
 
-            if filteredTodayHabits.isEmpty {
+            if homeVM.filteredTodayHabits.isEmpty {
                 emptyStateView
             }
         }
@@ -152,66 +104,41 @@ struct HomeView: View {
     private var timeFilterChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                // All filter
-                Button {
-                    selectedTimeFilter = nil
-                } label: {
-                    Text("all")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(selectedTimeFilter == nil ? .white : .primary)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(
-                            selectedTimeFilter == nil
-                                ? Color(red: 0.42, green: 0.39, blue: 1.0)
-                                : Color.white
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                        )
-                        .cornerRadius(20)
+                Button { homeVM.selectedTimeFilter = nil } label: {
+                    chipLabel(text: "all", isSelected: homeVM.selectedTimeFilter == nil)
                 }
 
-                // Time filters
                 ForEach(TimeOfDay.allCases, id: \.self) { time in
-                    Button {
-                        selectedTimeFilter = time
-                    } label: {
-                        Text(time.localizationKey)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(selectedTimeFilter == time ? .white : .primary)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 10)
-                            .background(
-                                selectedTimeFilter == time
-                                    ? Color(red: 0.42, green: 0.39, blue: 1.0)
-                                    : Color.white
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                            )
-                            .cornerRadius(20)
+                    Button { homeVM.selectedTimeFilter = time } label: {
+                        chipLabel(text: time.localizationKey, isSelected: homeVM.selectedTimeFilter == time)
                     }
                 }
             }
         }
     }
 
+    private func chipLabel(text: LocalizedStringKey, isSelected: Bool) -> some View {
+        Text(text)
+            .font(.subheadline)
+            .fontWeight(.medium)
+            .foregroundColor(isSelected ? .white : .primary)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 10)
+            .background(isSelected ? Color(red: 0.42, green: 0.39, blue: 1.0) : Color.white)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+            )
+            .cornerRadius(20)
+    }
+
     private var progressBar: some View {
-        let progress = viewModel.getTodayProgress()
-        let percentage = progress.total > 0 ? Double(progress.completed) / Double(progress.total) : 0
+        let progress = homeVM.todayProgress
 
         return VStack(spacing: 8) {
             HStack {
-                Text("progress")
-                    .font(.headline)
-
+                Text("progress").font(.headline)
                 Spacer()
-
                 if progress.completed == progress.total && progress.total > 0 {
                     Text("allDone")
                         .font(.subheadline)
@@ -225,11 +152,15 @@ struct HomeView: View {
                     .fill(Color.gray.opacity(0.2))
                     .frame(height: 12)
 
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.green)
-                    .frame(width: UIScreen.main.bounds.width * 0.9 * percentage, height: 12)
-                    .animation(.easeInOut, value: percentage)
+                GeometryReader { proxy in
+                    let width = proxy.size.width * progress.percentage
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.green)
+                        .frame(width: width, height: 12)
+                        .animation(.easeInOut, value: progress.percentage)
+                }
             }
+            .frame(height: 12)
         }
         .padding()
         .background(Color.white)
@@ -237,37 +168,43 @@ struct HomeView: View {
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
 
-    private var filteredTodayHabits: [Habit] {
-        if let timeFilter = selectedTimeFilter {
-            return viewModel.todayHabits.filter { $0.timeOfDay == timeFilter }
-        }
-        return viewModel.todayHabits
-    }
-
-    // MARK: - Weekly View
-
     private var weeklyView: some View {
         VStack(spacing: 16) {
-            ForEach(viewModel.habits) { habit in
-                WeeklyHabitCardView(habit: habit, viewModel: viewModel)
+            ForEach(homeVM.allHabits) { habit in
+                WeeklyHabitCardView(habit: habit, viewModel: homeVM.habitViewModel)
             }
-
-            if viewModel.habits.isEmpty {
-                emptyStateView
-            }
+            if homeVM.allHabits.isEmpty { emptyStateView }
         }
     }
-
-    // MARK: - Overall View
 
     private var overallView: some View {
         VStack(spacing: 16) {
-            ForEach(viewModel.habits) { habit in
-                OverallHabitCardView(habit: habit, viewModel: viewModel)
+            ForEach(homeVM.allHabits) { habit in
+                OverallHabitCard(habit: habit, viewModel: homeVM.habitViewModel)
             }
+            if homeVM.allHabits.isEmpty { emptyStateView }
+        }
+    }
 
-            if viewModel.habits.isEmpty {
-                emptyStateView
+    private var floatingAddButton: some View {
+        VStack {
+            Spacer()
+            HStack {
+                Spacer()
+                Button {
+                    homeVM.goToCreateHabit()
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .frame(width: 56, height: 56)
+                        .background(Color(red: 0.42, green: 0.39, blue: 1.0))
+                        .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+                }
+                .padding(.trailing, 20)
+                .padding(.bottom, 20)
             }
         }
     }
@@ -291,66 +228,3 @@ struct HomeView: View {
     }
 }
 
-// MARK: - Home Tab Enum
-
-enum HomeTab: String, CaseIterable {
-    case today = "Today"
-    case weekly = "Weekly"
-    case overall = "Overall"
-
-    var localizationKey: LocalizedStringKey {
-        switch self {
-        case .today: return "today"
-        case .weekly: return "weekly"
-        case .overall: return "overall"
-        }
-    }
-}
-
-// MARK: - Habit Card View
-
-struct HabitCardView: View {
-    let habit: Habit
-    let isCompleted: Bool
-    let onToggle: () -> Void
-
-    var body: some View {
-        Button(action: onToggle) {
-            HStack(spacing: 16) {
-                // Emoji Icon (or default if SF Symbol)
-                Text(habit.icon.contains(".") ? "⭐️" : habit.icon)
-                    .font(.system(size: 32))
-
-                // Habit Name
-                Text(habit.name)
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .foregroundColor(.black)
-
-                Spacer()
-
-                // Checkmark for completed
-                if isCompleted {
-                    ZStack {
-                        Circle()
-                            .fill(Color.green)
-                            .frame(width: 28, height: 28)
-
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.white)
-                    }
-                }
-            }
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(habit.colorValue)
-            .cornerRadius(16)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
-#Preview {
-    HomeView(viewModel: HabitViewModel())
-}

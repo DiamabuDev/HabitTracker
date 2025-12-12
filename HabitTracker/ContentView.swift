@@ -8,29 +8,29 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var viewModel = HabitViewModel()
+    @StateObject private var nav = NavCoordinator()
 
     var body: some View {
-        TabView {
-            HomeView(viewModel: viewModel)
-                .tabItem {
-                    Label("today", systemImage: "checkmark.circle.fill")
-                }
+        NavigationStack(path: $nav.path) {
+            TabView {
+                nav.build(.home)
+                    .tabItem {
+                        Label("today", systemImage: "checkmark.circle.fill")
+                    }
 
-            CalendarView(viewModel: viewModel)
-                .tabItem {
-                    Label("calendar", systemImage: "calendar")
-                }
+                nav.build(.statistics)
+                    .tabItem {
+                        Label("statistics", systemImage: "chart.bar.fill")
+                    }
 
-            StatisticsView(viewModel: viewModel)
-                .tabItem {
-                    Label("statistics", systemImage: "chart.bar.fill")
-                }
-
-            SettingsView(viewModel: viewModel)
-                .tabItem {
-                    Label("settings", systemImage: "gear")
-                }
+                nav.build(.settings)
+                    .tabItem {
+                        Label("settings", systemImage: "gear")
+                    }
+            }
+            .navigationDestination(for: Screen.self) { screen in
+                nav.build(screen)
+            }
         }
     }
 }
@@ -38,3 +38,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+

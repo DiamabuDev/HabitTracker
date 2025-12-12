@@ -1,5 +1,5 @@
 //
-//  HabitRowView.swift
+//  HabitRow.swift
 //  HabitTracker
 //
 //  Created by Diana Maldonado on 2025-12-10.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct HabitRowView: View {
+struct HabitRow: View {
     let habit: Habit
     let isCompleted: Bool
     let streak: Int
@@ -98,7 +98,7 @@ struct HabitRowView: View {
 
 #Preview {
     VStack(spacing: 12) {
-        HabitRowView(
+        HabitRow(
             habit: Habit(
                 name: "Morning Run",
                 description: "Run 5km",
@@ -110,7 +110,7 @@ struct HabitRowView: View {
             streak: 7
         ) {}
 
-        HabitRowView(
+        HabitRow(
             habit: Habit(
                 name: "Read Book",
                 description: "Read for 30 minutes",
