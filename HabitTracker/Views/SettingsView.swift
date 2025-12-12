@@ -274,14 +274,14 @@ struct ColorPickerRow: View {
     @Binding var selectedColor: String
 
     private let colorOptions: [(name: String, color: Color)] = [
-        ("yellow", Color(red: 1.0, green: 1.0, blue: 0.7)),
-        ("orange", Color(red: 1.0, green: 0.85, blue: 0.7)),
-        ("gray", Color.gray.opacity(0.5)),
-        ("pink", Color(red: 1.0, green: 0.7, blue: 0.8)),
-        ("purple", Color(red: 0.75, green: 0.7, blue: 1.0)),
-        ("blue", Color(red: 0.7, green: 0.8, blue: 1.0)),
-        ("teal", Color(red: 0.7, green: 0.9, blue: 0.9)),
-        ("green", Color(red: 0.7, green: 1.0, blue: 0.8))
+        ("yellow", Color("PastelYellow")),
+        ("orange", Color("PastelOrange")),
+        ("gray", Color("PastelGray")),
+        ("pink", Color("PastelPink")),
+        ("purple", Color("PastelPurple")),
+        ("blue", Color("PastelBlue")),
+        ("teal", Color("PastelTeal")),
+        ("green", Color("PastelGreen"))
     ]
 
     var body: some View {

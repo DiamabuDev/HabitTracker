@@ -54,16 +54,35 @@ struct Habit: Identifiable, Codable, Hashable {
     }
 
     var colorValue: Color {
-        // Return pastel colors based on color name
         switch color.lowercased() {
-        case "red", "pink": return Color(red: 1.0, green: 0.7, blue: 0.8)
-        case "purple": return Color(red: 0.75, green: 0.7, blue: 1.0)
-        case "blue": return Color(red: 0.7, green: 0.8, blue: 1.0)
-        case "green": return Color(red: 0.7, green: 1.0, blue: 0.8)
-        case "orange": return Color(red: 1.0, green: 0.85, blue: 0.7)
-        case "yellow": return Color(red: 1.0, green: 1.0, blue: 0.7)
-        case "teal": return Color(red: 0.7, green: 0.9, blue: 0.9)
-        default: return Color(red: 0.9, green: 0.9, blue: 0.9)
+        case "red", "pink":
+            return Color("PastelPink")
+        case "purple":
+            return Color("PastelPurple")
+        case "blue":
+            return Color("PastelBlue")
+        case "green":
+            return Color("PastelGreen")
+        case "orange":
+            return Color("PastelOrange")
+        case "yellow":
+            return Color("PastelYellow")
+        case "teal":
+            return Color("PastelTeal")
+        case "gray":
+            return Color("PastelGray")
+        case "brown":
+            return Color("PastelBrown")
+        case "rose":
+            return Color("PastelRose")
+        case "magenta":
+            return Color("PastelMagenta")
+        case "lightpurple":
+            return Color("PastelLightPurple")
+        case "cyan":
+            return Color("PastelCyan")
+        default:
+            return Color("PastelGray")
         }
     }
 }

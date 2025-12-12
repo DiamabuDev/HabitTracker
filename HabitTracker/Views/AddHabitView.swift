@@ -208,20 +208,20 @@ struct AddHabitView: View {
     }
 
     private let colorOptions: [(name: String, color: Color)] = [
-        ("yellow", Color(red: 1.0, green: 1.0, blue: 0.7)),
-        ("orange", Color(red: 1.0, green: 0.85, blue: 0.7)),
-        ("gray", Color.gray.opacity(0.5)),
-        ("brown", Color(red: 0.7, green: 0.6, blue: 0.6)),
-        ("pink", Color(red: 1.0, green: 0.7, blue: 0.8)),
-        ("rose", Color(red: 1.0, green: 0.8, blue: 0.9)),
-        ("magenta", Color(red: 1.0, green: 0.6, blue: 1.0)),
-        ("lightpurple", Color(red: 0.9, green: 0.8, blue: 1.0)),
-        ("purple", Color(red: 0.75, green: 0.7, blue: 1.0)),
-        ("blue", Color(red: 0.7, green: 0.8, blue: 1.0)),
-        ("teal", Color(red: 0.7, green: 0.9, blue: 0.9)),
-        ("cyan", Color(red: 0.7, green: 1.0, blue: 1.0)),
-        ("green", Color(red: 0.7, green: 1.0, blue: 0.8)),
-        ("rainbow", Color.pink) // Placeholder for gradient
+        ("yellow", Color("PastelYellow")),
+        ("orange", Color("PastelOrange")),
+        ("gray", Color("PastelGray")),
+        ("brown", Color("PastelBrown")),
+        ("pink", Color("PastelPink")),
+        ("rose", Color("PastelRose")),
+        ("magenta", Color("PastelMagenta")),
+        ("lightpurple", Color("PastelLightPurple")),
+        ("purple", Color("PastelPurple")),
+        ("blue", Color("PastelBlue")),
+        ("teal", Color("PastelTeal")),
+        ("cyan", Color("PastelCyan")),
+        ("green", Color("PastelGreen")),
+        ("rainbow", Color("PastelPink"))
     ]
 
     // MARK: - Repeat Section
