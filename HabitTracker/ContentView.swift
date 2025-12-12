@@ -14,22 +14,22 @@ struct ContentView: View {
         TabView {
             HomeView(viewModel: viewModel)
                 .tabItem {
-                    Label("Today", systemImage: "checkmark.circle.fill")
+                    Label("today", systemImage: "checkmark.circle.fill")
                 }
 
             CalendarView(viewModel: viewModel)
                 .tabItem {
-                    Label("Calendar", systemImage: "calendar")
+                    Label("calendar", systemImage: "calendar")
                 }
 
             StatisticsView(viewModel: viewModel)
                 .tabItem {
-                    Label("Stats", systemImage: "chart.bar.fill")
+                    Label("statistics", systemImage: "chart.bar.fill")
                 }
 
             SettingsView(viewModel: viewModel)
                 .tabItem {
-                    Label("Settings", systemImage: "gear")
+                    Label("settings", systemImage: "gear")
                 }
         }
     }

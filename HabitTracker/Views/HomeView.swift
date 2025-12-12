@@ -61,7 +61,7 @@ struct HomeView: View {
                     }
                 }
             }
-            .navigationTitle("Home")
+            .navigationTitle(Text("home"))
             .sheet(isPresented: $showAddHabit) {
                 AddHabitView(viewModel: viewModel)
             }
@@ -78,7 +78,7 @@ struct HomeView: View {
                         selectedTab = tab
                     }
                 } label: {
-                    Text(tab.rawValue)
+                    Text(tab.localizationKey)
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundColor(selectedTab == tab ? .white : .primary)
@@ -125,7 +125,7 @@ struct HomeView: View {
             let completedHabits = filteredTodayHabits.filter { viewModel.isHabitCompleted($0) }
             if !completedHabits.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Completed")
+                    Text("completed")
                         .font(.subheadline)
                         .foregroundColor(.gray)
                         .padding(.horizontal, 4)
@@ -156,7 +156,7 @@ struct HomeView: View {
                 Button {
                     selectedTimeFilter = nil
                 } label: {
-                    Text("All")
+                    Text("all")
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundColor(selectedTimeFilter == nil ? .white : .primary)
@@ -179,7 +179,7 @@ struct HomeView: View {
                     Button {
                         selectedTimeFilter = time
                     } label: {
-                        Text(time.rawValue)
+                        Text(time.localizationKey)
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .foregroundColor(selectedTimeFilter == time ? .white : .primary)
@@ -207,13 +207,13 @@ struct HomeView: View {
 
         return VStack(spacing: 8) {
             HStack {
-                Text("Progress")
+                Text("progress")
                     .font(.headline)
 
                 Spacer()
 
                 if progress.completed == progress.total && progress.total > 0 {
-                    Text("All Done 🎉")
+                    Text("allDone")
                         .font(.subheadline)
                         .foregroundColor(.green)
                         .fontWeight(.semibold)
@@ -278,11 +278,11 @@ struct HomeView: View {
                 .font(.system(size: 50))
                 .foregroundColor(.gray.opacity(0.5))
 
-            Text("No habits for today")
+            Text("noHabitsForToday")
                 .font(.headline)
                 .foregroundColor(.secondary)
 
-            Text("Tap the + button to create your first habit")
+            Text("tapPlusToCreateFirstHabit")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -297,6 +297,14 @@ enum HomeTab: String, CaseIterable {
     case today = "Today"
     case weekly = "Weekly"
     case overall = "Overall"
+
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .today: return "today"
+        case .weekly: return "weekly"
+        case .overall: return "overall"
+        }
+    }
 }
 
 // MARK: - Habit Card View
@@ -340,6 +348,16 @@ struct HabitCardView: View {
             .cornerRadius(16)
         }
         .buttonStyle(PlainButtonStyle())
+    }
+}
+
+private extension TimeOfDay {
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .morning: return "morning"
+        case .afternoon: return "afternoon"
+        case .evening: return "evening"
+        }
     }
 }
 

@@ -38,7 +38,7 @@ struct SettingsView: View {
                                         .font(.subheadline)
                                         .foregroundColor(.primary)
 
-                                    Text(habit.category.rawValue)
+                                    Text(habit.category.localizationKey)
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
@@ -58,7 +58,7 @@ struct SettingsView: View {
                         }
                     }
                 } header: {
-                    Text("My Habits")
+                    Text("myHabits")
                 } footer: {
                     Text("\(viewModel.habits.count) habit\(viewModel.habits.count != 1 ? "s" : "") total")
                 }
@@ -68,53 +68,53 @@ struct SettingsView: View {
                     Button(role: .destructive) {
                         showClearDataAlert = true
                     } label: {
-                        Label("Clear All Data", systemImage: "trash")
+                        Label(String(localized: "clearAllData"), systemImage: "trash")
                     }
                 } header: {
-                    Text("Data Management")
+                    Text("dataManagement")
                 } footer: {
-                    Text("This will delete all habits and logs. This action cannot be undone.")
+                    Text("deleteAllDataWarning")
                 }
 
                 // About Section
-                Section("About") {
+                Section("about") {
                     HStack {
-                        Text("Version")
+                        Text("version")
                         Spacer()
                         Text("1.0.0")
                             .foregroundColor(.secondary)
                     }
 
                     HStack {
-                        Text("Total Logs")
+                        Text("totalLogs")
                         Spacer()
                         Text("\(viewModel.logs.count)")
                             .foregroundColor(.secondary)
                     }
                 }
             }
-            .navigationTitle("Settings")
+            .navigationTitle(Text("settings"))
             .sheet(item: $showEditHabit) { habit in
                 EditHabitView(viewModel: viewModel, habit: habit)
             }
-            .alert("Delete Habit", isPresented: $showDeleteAlert) {
-                Button("Cancel", role: .cancel) {}
-                Button("Delete", role: .destructive) {
+            .alert("deleteHabit", isPresented: $showDeleteAlert) {
+                Button("cancel", role: .cancel) {}
+                Button("delete", role: .destructive) {
                     if let habit = habitToDelete {
                         viewModel.deleteHabit(habit)
                     }
                 }
             } message: {
-                Text("Are you sure you want to delete this habit? All associated logs will also be deleted.")
+                Text("deleteHabitConfirmMessage")
             }
-            .alert("Clear All Data", isPresented: $showClearDataAlert) {
-                Button("Cancel", role: .cancel) {}
-                Button("Clear", role: .destructive) {
+            .alert("clearAllDataTitle", isPresented: $showClearDataAlert) {
+                Button("cancel", role: .cancel) {}
+                Button("clear", role: .destructive) {
                     CoreDataManager.shared.save()
                     viewModel.loadData()
                 }
             } message: {
-                Text("Are you sure you want to delete all habits and logs? This action cannot be undone.")
+                Text("deleteAllDataWarning")
             }
         }
     }
@@ -162,18 +162,18 @@ struct EditHabitView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Basic Information") {
-                    TextField("Habit Name", text: $name)
-                    TextField("Description (Optional)", text: $description, axis: .vertical)
+                Section("basicInformation") {
+                    TextField(String(localized: "habitName"), text: $name)
+                    TextField(String(localized: "descriptionOptional"), text: $description, axis: .vertical)
                         .lineLimit(2...4)
                 }
 
-                Section("Appearance") {
+                Section("appearance") {
                     Button {
                         showIconPicker = true
                     } label: {
                         HStack {
-                            Text("Icon")
+                            Text("icon")
                             Spacer()
                             Text(selectedIcon.contains(".") ? "⭐️" : selectedIcon)
                                 .font(.system(size: 24))
@@ -183,28 +183,28 @@ struct EditHabitView: View {
                     ColorPickerRow(selectedColor: $selectedColor)
                 }
 
-                Section("Category") {
-                    Picker("Category", selection: $selectedCategory) {
+                Section("category") {
+                    Picker(String(localized: "category"), selection: $selectedCategory) {
                         ForEach(HabitCategory.allCases, id: \.self) { category in
                             HStack {
                                 Image(systemName: category.icon)
-                                Text(category.rawValue)
+                                Text(category.localizationKey)
                             }
                             .tag(category)
                         }
                     }
                 }
 
-                Section("Frequency") {
-                    Picker("Frequency", selection: $selectedFrequency) {
+                Section("frequency") {
+                    Picker(String(localized: "frequency"), selection: $selectedFrequency) {
                         ForEach(HabitFrequency.allCases, id: \.self) { frequency in
-                            Text(frequency.rawValue).tag(frequency)
+                            Text(frequency.localizationKey).tag(frequency)
                         }
                     }
 
                     if selectedFrequency == .custom {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Target Days")
+                            Text("targetDays")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
 
@@ -212,30 +212,38 @@ struct EditHabitView: View {
                         }
                     }
 
-                    Stepper("Goal: \(goal) time\(goal > 1 ? "s" : "") per day", value: $goal, in: 1...10)
+                    // goalPerDayFormat = "Goal: %d time(s) per day"
+                    Stepper(
+                        String(
+                            format: String(localized: "goalPerDayFormat"),
+                            goal
+                        ),
+                        value: $goal,
+                        in: 1...10
+                    )
                 }
 
-                Section("Reminder") {
-                    Toggle("Enable Reminder", isOn: $reminderEnabled)
+                Section("reminder") {
+                    Toggle("enableReminder", isOn: $reminderEnabled)
 
                     if reminderEnabled {
-                        DatePicker("Time", selection: $reminderTime, displayedComponents: .hourAndMinute)
+                        DatePicker("time", selection: $reminderTime, displayedComponents: .hourAndMinute)
                     }
                 }
             }
-            .navigationTitle("Edit Habit")
+            .navigationTitle(Text("editHabit"))
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button("cancel") {
                         dismiss()
                     }
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button("save") {
                         saveHabit()
                     }
                     .disabled(name.isEmpty)
@@ -315,14 +323,14 @@ struct ColorPickerRow: View {
 struct WeekdaySelector: View {
     @Binding var selectedDays: Set<Int>
 
-    private let weekdayLabels = [
-        (label: "S", day: 0),
-        (label: "M", day: 1),
-        (label: "T", day: 2),
-        (label: "W", day: 3),
-        (label: "T", day: 4),
-        (label: "F", day: 5),
-        (label: "S", day: 6)
+    private let weekdayLabels: [(labelKey: LocalizedStringKey, day: Int)] = [
+        (labelKey: "weekdayS", day: 0),
+        (labelKey: "weekdayM", day: 1),
+        (labelKey: "weekdayT", day: 2),
+        (labelKey: "weekdayW", day: 3),
+        (labelKey: "weekdayT", day: 4),
+        (labelKey: "weekdayF", day: 5),
+        (labelKey: "weekdayS", day: 6)
     ]
 
     var body: some View {
@@ -335,7 +343,7 @@ struct WeekdaySelector: View {
                         selectedDays.insert(item.day)
                     }
                 } label: {
-                    Text(item.label)
+                    Text(item.labelKey)
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundColor(.white)
@@ -354,26 +362,27 @@ struct IconPickerView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var selectedIcon: String
 
-    private let emojiCategories: [(name: String, emojis: [String])] = [
-        ("Fitness", ["🏃", "🏋️", "🚴", "🏊", "🧘", "🤸", "⛹️", "🚶"]),
-        ("Health", ["💊", "🩺", "💉", "🏥", "🧠", "❤️", "🫁", "🦷"]),
-        ("Food", ["🥗", "🍎", "🥤", "🍵", "🥛", "🥗", "🍊", "🥕"]),
-        ("Learning", ["📚", "📖", "✏️", "📝", "🎓", "🧑‍🎓", "📐", "🔬"]),
-        ("Work", ["💼", "💻", "📊", "📈", "🗂️", "📋", "✅", "🖊️"]),
-        ("Creative", ["🎨", "🎭", "🎪", "🎬", "📷", "🎵", "🎸", "✍️"]),
-        ("Mindfulness", ["🧘", "🕉️", "☮️", "🌸", "🌺", "🍃", "🌿", "💆"]),
-        ("Social", ["👥", "🤝", "💬", "📱", "👨‍👩‍👧", "🎉", "🎁", "💌"]),
-        ("Money", ["💰", "💵", "💳", "🏦", "📊", "💸", "🪙", "💹"]),
-        ("Stars", ["⭐️", "✨", "🌟", "💫", "🌠", "🔆", "☀️", "🌞"])
+    private let emojiCategories: [(nameKey: LocalizedStringKey, emojis: [String])] = [
+        ("fitness", ["🏃", "🏋️", "🚴", "🏊", "🧘", "🤸", "⛹️", "🚶"]),
+        ("health", ["💊", "🩺", "💉", "🏥", "🧠", "❤️", "🫁", "🦷"]),
+        ("food", ["🥗", "🍎", "🥤", "🍵", "🥛", "🥗", "🍊", "🥕"]),
+        ("learning", ["📚", "📖", "✏️", "📝", "🎓", "🧑‍🎓", "📐", "🔬"]),
+        ("work", ["💼", "💻", "📊", "📈", "🗂️", "📋", "✅", "🖊️"]),
+        ("creative", ["🎨", "🎭", "🎪", "🎬", "📷", "🎵", "🎸", "✍️"]),
+        ("mindfulness", ["🧘", "🕉️", "☮️", "🌸", "🌺", "🍃", "🌿", "💆"]),
+        ("social", ["👥", "🤝", "💬", "📱", "👨‍👩‍👧", "🎉", "🎁", "💌"]),
+        ("money", ["💰", "💵", "💳", "🏦", "📊", "💸", "🪙", "💹"]),
+        ("stars", ["⭐️", "✨", "🌟", "💫", "🌠", "🔆", "☀️", "🌞"])
     ]
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    ForEach(emojiCategories, id: \.name) { category in
+                    ForEach(emojiCategories.indices, id: \.self) { index in
+                        let category = emojiCategories[index]
                         VStack(alignment: .leading, spacing: 12) {
-                            Text(category.name)
+                            Text(category.nameKey)
                                 .font(.headline)
                                 .foregroundColor(.primary)
 
@@ -396,17 +405,43 @@ struct IconPickerView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Choose Icon")
+            .navigationTitle(Text("chooseIcon"))
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button("cancel") {
                         dismiss()
                     }
                 }
             }
+        }
+    }
+}
+
+private extension HabitCategory {
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .health: return "health"
+        case .fitness: return "fitness"
+        case .productivity: return "productivity"
+        case .mindfulness: return "mindfulness"
+        case .learning: return "learning"
+        case .social: return "social"
+        case .creativity: return "creativity"
+        case .finance: return "finance"
+        case .other: return "other"
+        }
+    }
+}
+
+private extension HabitFrequency {
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .daily: return "daily"
+        case .weekly: return "weekly"
+        case .custom: return "custom"
         }
     }
 }

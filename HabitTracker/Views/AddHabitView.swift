@@ -34,10 +34,10 @@ struct AddHabitView: View {
 
                     // Habit Name
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Habit Name")
+                        Text("habitName")
                             .font(.headline)
 
-                        TextField("Habit Name", text: $name)
+                        TextField(String(localized: "habitName"), text: $name)
                             .padding()
                             .background(Color.gray.opacity(0.1))
                             .cornerRadius(12)
@@ -62,22 +62,22 @@ struct AddHabitView: View {
 
                     // End Habit Toggle
                     VStack(spacing: 12) {
-                        Toggle("End Habit on", isOn: $endHabitEnabled)
+                        Toggle(String(localized: "endHabitOn"), isOn: $endHabitEnabled)
                             .font(.body)
 
                         if endHabitEnabled {
-                            DatePicker("End Date", selection: $endDate, displayedComponents: .date)
+                            DatePicker(String(localized: "endDate"), selection: $endDate, displayedComponents: .date)
                                 .datePickerStyle(.compact)
                         }
                     }
 
                     // Reminder Toggle
                     VStack(spacing: 12) {
-                        Toggle("Set Reminder", isOn: $reminderEnabled)
+                        Toggle(String(localized: "setReminder"), isOn: $reminderEnabled)
                             .font(.body)
 
                         if reminderEnabled {
-                            DatePicker("Reminder Time", selection: $reminderTime, displayedComponents: .hourAndMinute)
+                            DatePicker(String(localized: "reminderTime"), selection: $reminderTime, displayedComponents: .hourAndMinute)
                                 .datePickerStyle(.compact)
                         }
                     }
@@ -86,7 +86,7 @@ struct AddHabitView: View {
                     Button {
                         saveHabit()
                     } label: {
-                        Text("Save")
+                        Text("save")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -100,7 +100,7 @@ struct AddHabitView: View {
                 .padding()
             }
             .background(Color.white)
-            .navigationTitle("Create New Habit")
+            .navigationTitle(Text("createNewHabit"))
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -111,6 +111,7 @@ struct AddHabitView: View {
                     } label: {
                         Image(systemName: "xmark")
                             .foregroundColor(.primary)
+                            .accessibilityLabel(Text("cancel"))
                     }
                 }
             }
@@ -125,7 +126,7 @@ struct AddHabitView: View {
                 Button {
                     habitType = type
                 } label: {
-                    Text(type.rawValue)
+                    Text(type.localizationKey)
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundColor(habitType == type ? .white : .gray)
@@ -144,7 +145,7 @@ struct AddHabitView: View {
     private var iconSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Icon")
+                Text("icon")
                     .font(.headline)
 
                 Spacer()
@@ -152,7 +153,7 @@ struct AddHabitView: View {
                 Button {
                     // Show icon picker
                 } label: {
-                    Text("View All →")
+                    Text("viewAll")
                         .font(.subheadline)
                         .foregroundColor(primaryPurple)
                 }
@@ -182,7 +183,7 @@ struct AddHabitView: View {
 
     private var colorSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Color")
+            Text("color")
                 .font(.headline)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 16) {
@@ -228,7 +229,7 @@ struct AddHabitView: View {
 
     private var repeatSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Repeat")
+            Text("repeat")
                 .font(.headline)
 
             HStack(spacing: 12) {
@@ -239,7 +240,7 @@ struct AddHabitView: View {
                             selectedDays = [0, 1, 2, 3, 4, 5, 6]
                         }
                     } label: {
-                        Text(freq.rawValue)
+                        Text(freq.localizationKey)
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .foregroundColor(selectedFrequency == freq ? .white : .primary)
@@ -262,7 +263,7 @@ struct AddHabitView: View {
     private var daysSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("On these day:")
+                Text("onTheseDays")
                     .font(.headline)
 
                 Spacer()
@@ -275,7 +276,7 @@ struct AddHabitView: View {
                     }
                 } label: {
                     HStack {
-                        Text("All day")
+                        Text("allDay")
                             .font(.subheadline)
 
                         if selectedDays.count == 7 {
@@ -296,7 +297,7 @@ struct AddHabitView: View {
                             selectedDays.insert(item.day)
                         }
                     } label: {
-                        Text(item.label)
+                        Text(item.labelKey)
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .foregroundColor(.white)
@@ -309,21 +310,21 @@ struct AddHabitView: View {
         }
     }
 
-    private let weekdayLabels = [
-        (label: "S", day: 0),
-        (label: "M", day: 1),
-        (label: "T", day: 2),
-        (label: "W", day: 3),
-        (label: "T", day: 4),
-        (label: "F", day: 5),
-        (label: "S", day: 6)
+    private let weekdayLabels: [(labelKey: LocalizedStringKey, day: Int)] = [
+        (labelKey: "weekdayS2", day: 0),
+        (labelKey: "weekdayM", day: 1),
+        (labelKey: "weekdayT", day: 2),
+        (labelKey: "weekdayW", day: 3),
+        (labelKey: "weekdayT2", day: 4),
+        (labelKey: "weekdayF", day: 5),
+        (labelKey: "weekdayS", day: 6)
     ]
 
     // MARK: - Time of Day Section
 
     private var timeOfDaySection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Do it at:")
+            Text("doItAt")
                 .font(.headline)
 
             HStack(spacing: 12) {
@@ -335,7 +336,7 @@ struct AddHabitView: View {
                             selectedTimeOfDay = time
                         }
                     } label: {
-                        Text(time.rawValue)
+                        Text(time.localizationKey)
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .foregroundColor(selectedTimeOfDay == time ? primaryPurple : .primary)
@@ -379,6 +380,33 @@ struct AddHabitView: View {
 enum HabitType: String, CaseIterable {
     case regular = "Regular Habit"
     case oneTime = "One-time Task"
+
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .regular: return "regularHabit"
+        case .oneTime: return "oneTimeTask"
+        }
+    }
+}
+
+private extension HabitFrequency {
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .daily: return "daily"
+        case .weekly: return "weekly"
+        case .custom: return "custom"
+        }
+    }
+}
+
+private extension TimeOfDay {
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .morning: return "morning"
+        case .afternoon: return "afternoon"
+        case .evening: return "evening"
+        }
+    }
 }
 
 #Preview {

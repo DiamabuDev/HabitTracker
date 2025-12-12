@@ -11,7 +11,7 @@ struct WeeklyHabitCardView: View {
     let habit: Habit
     @ObservedObject var viewModel: HabitViewModel
 
-    private let weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    private let weekdaysKeys: [LocalizedStringKey] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -36,7 +36,7 @@ struct WeeklyHabitCardView: View {
             HStack(spacing: 8) {
                 ForEach(0..<7) { index in
                     VStack(spacing: 4) {
-                        Text(weekdays[index])
+                        Text(weekdaysKeys[index])
                             .font(.caption2)
                             .foregroundColor(.gray)
 
@@ -70,11 +70,12 @@ struct WeeklyHabitCardView: View {
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
 
-    private var frequencyText: String {
+    private var frequencyText: LocalizedStringKey {
         if habit.targetDays.count == 7 {
-            return "Everyday"
+            return "everyday"
         } else {
-            return "\(habit.targetDays.count) days per week"
+            // daysPerWeekFormat = "%d days per week"
+            return LocalizedStringKey(String(format: String(localized: "daysPerWeekFormat"), habit.targetDays.count))
         }
     }
 

@@ -27,7 +27,7 @@ struct StatisticsView: View {
                 .padding()
             }
             .background(Color(red: 0.95, green: 0.95, blue: 0.97))
-            .navigationTitle("Statistics")
+            .navigationTitle(Text("statistics"))
         }
     }
 
@@ -37,14 +37,14 @@ struct StatisticsView: View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
                 StatCard(
-                    title: "Total Habits",
+                    titleKey: "totalHabits",
                     value: "\(viewModel.habits.count)",
                     icon: "list.bullet",
                     color: .blue
                 )
 
                 StatCard(
-                    title: "Active Today",
+                    titleKey: "activeToday",
                     value: "\(viewModel.todayHabits.count)",
                     icon: "checkmark.circle.fill",
                     color: .green
@@ -53,14 +53,14 @@ struct StatisticsView: View {
 
             HStack(spacing: 12) {
                 StatCard(
-                    title: "Total Logs",
+                    titleKey: "totalLogs",
                     value: "\(viewModel.logs.count)",
                     icon: "chart.bar.fill",
                     color: .orange
                 )
 
                 StatCard(
-                    title: "Today's Progress",
+                    titleKey: "todaysProgress",
                     value: todayProgressText,
                     icon: "target",
                     color: .purple
@@ -78,7 +78,7 @@ struct StatisticsView: View {
 
     private var habitsStatsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Habit Performance")
+            Text("habitPerformance")
                 .font(.headline)
                 .padding(.horizontal, 4)
 
@@ -101,11 +101,11 @@ struct StatisticsView: View {
                 .font(.system(size: 60))
                 .foregroundColor(.gray.opacity(0.5))
 
-            Text("No Statistics Yet")
+            Text("noStatisticsYet")
                 .font(.headline)
                 .foregroundColor(.secondary)
 
-            Text("Create habits to see your statistics")
+            Text("createHabitsToSeeStatistics")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -121,7 +121,7 @@ struct StatisticsView: View {
 // MARK: - Stat Card
 
 struct StatCard: View {
-    let title: String
+    let titleKey: LocalizedStringKey
     let value: String
     let icon: String
     let color: Color
@@ -141,7 +141,7 @@ struct StatCard: View {
                 .fontWeight(.bold)
                 .foregroundColor(.primary)
 
-            Text(title)
+            Text(titleKey)
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -180,7 +180,7 @@ struct HabitStatRow: View {
                             .font(.subheadline)
                             .fontWeight(.medium)
 
-                        Text(habit.category.rawValue)
+                        Text(habit.category.localizationKey)
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -214,14 +214,14 @@ struct HabitStatRow: View {
             // Stats
             HStack(spacing: 16) {
                 StatBadge(
-                    label: "Current",
+                    labelKey: "progress",
                     value: "\(currentStreak)",
                     icon: "flame.fill",
                     color: .orange
                 )
 
                 StatBadge(
-                    label: "Longest",
+                    labelKey: "longest",
                     value: "\(longestStreak)",
                     icon: "chart.line.uptrend.xyaxis",
                     color: .blue
@@ -229,9 +229,14 @@ struct HabitStatRow: View {
 
                 Spacer()
 
-                Text("since \(habit.createdAt.formatted(.dateTime.month(.abbreviated).day()))")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                Text(
+                    String(
+                        format: String(localized: "sinceDateFormat"),
+                        habit.createdAt.formatted(.dateTime.month(.abbreviated).day())
+                    )
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
             }
         }
         .padding()
@@ -244,7 +249,7 @@ struct HabitStatRow: View {
 // MARK: - Stat Badge
 
 struct StatBadge: View {
-    let label: String
+    let labelKey: LocalizedStringKey
     let value: String
     let icon: String
     let color: Color
@@ -260,7 +265,7 @@ struct StatBadge: View {
                     .font(.caption)
                     .fontWeight(.semibold)
 
-                Text(label)
+                Text(labelKey)
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
@@ -269,6 +274,22 @@ struct StatBadge: View {
         .padding(.vertical, 6)
         .background(color.opacity(0.1))
         .cornerRadius(8)
+    }
+}
+
+private extension HabitCategory {
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .health: return "health"
+        case .fitness: return "fitness"
+        case .productivity: return "productivity"
+        case .mindfulness: return "mindfulness"
+        case .learning: return "learning"
+        case .social: return "social"
+        case .creativity: return "creativity"
+        case .finance: return "finance"
+        case .other: return "other"
+        }
     }
 }
 

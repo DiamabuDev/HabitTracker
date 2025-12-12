@@ -13,7 +13,7 @@ struct CalendarView: View {
     @State private var currentMonth = Date()
 
     private let calendar = Calendar.current
-    private let daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    private let daysOfWeekKeys: [LocalizedStringKey] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
 
     var body: some View {
         NavigationStack {
@@ -28,7 +28,7 @@ struct CalendarView: View {
                 .padding()
             }
             .background(Color(red: 0.95, green: 0.95, blue: 0.97))
-            .navigationTitle("Calendar")
+            .navigationTitle(Text("calendar"))
         }
     }
 
@@ -44,6 +44,7 @@ struct CalendarView: View {
                     Image(systemName: "chevron.left")
                         .font(.title3)
                         .foregroundColor(.primary)
+                        .accessibilityLabel(Text("previous"))
                 }
 
                 Spacer()
@@ -60,13 +61,14 @@ struct CalendarView: View {
                     Image(systemName: "chevron.right")
                         .font(.title3)
                         .foregroundColor(.primary)
+                        .accessibilityLabel(Text("next"))
                 }
             }
 
             // Days of Week Header
             HStack(spacing: 0) {
-                ForEach(daysOfWeek, id: \.self) { day in
-                    Text(day)
+                ForEach(daysOfWeekKeys.indices, id: \.self) { index in
+                    Text(daysOfWeekKeys[index])
                         .font(.caption)
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
@@ -188,7 +190,7 @@ struct CalendarView: View {
                         .font(.system(size: 40))
                         .foregroundColor(.gray.opacity(0.5))
 
-                    Text("No habits scheduled for this day")
+                    Text("noHabitsForToday")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }

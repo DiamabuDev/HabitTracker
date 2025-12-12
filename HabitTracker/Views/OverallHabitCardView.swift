@@ -37,7 +37,7 @@ struct OverallHabitCardView: View {
             VStack(alignment: .leading, spacing: 2) {
                 // Week labels
                 HStack(spacing: 0) {
-                    Text("W")
+                    Text("weekdayW") // Using single-letter 'W' key from your list
                         .font(.system(size: 8))
                         .foregroundColor(.gray)
                         .frame(width: 12)
@@ -76,11 +76,12 @@ struct OverallHabitCardView: View {
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
 
-    private var frequencyText: String {
+    private var frequencyText: LocalizedStringKey {
         if habit.targetDays.count == 7 {
-            return "Everyday"
+            return "everyday"
         } else {
-            return "\(habit.targetDays.count) days per week"
+            // daysPerWeekFormat = "%d days per week"
+            return LocalizedStringKey(String(format: String(localized: "daysPerWeekFormat"), habit.targetDays.count))
         }
     }
 
