@@ -351,16 +351,6 @@ struct HabitCardView: View {
     }
 }
 
-private extension TimeOfDay {
-    var localizationKey: LocalizedStringKey {
-        switch self {
-        case .morning: return "morning"
-        case .afternoon: return "afternoon"
-        case .evening: return "evening"
-        }
-    }
-}
-
 #Preview {
     HomeView(viewModel: HabitViewModel())
 }

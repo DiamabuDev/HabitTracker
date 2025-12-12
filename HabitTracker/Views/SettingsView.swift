@@ -436,16 +436,6 @@ private extension HabitCategory {
     }
 }
 
-private extension HabitFrequency {
-    var localizationKey: LocalizedStringKey {
-        switch self {
-        case .daily: return "daily"
-        case .weekly: return "weekly"
-        case .custom: return "custom"
-        }
-    }
-}
-
 #Preview {
     SettingsView(viewModel: HabitViewModel())
 }

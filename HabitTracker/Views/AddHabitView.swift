@@ -8,22 +8,15 @@
 import SwiftUI
 
 struct AddHabitView: View {
-    @Environment(\.dismiss) var dismiss
-    @ObservedObject var viewModel: HabitViewModel
+    @Environment(\.dismiss) private var dismiss
+    let appViewModel: HabitViewModel
 
-    @State private var habitType: HabitType = .regular
-    @State private var name = ""
-    @State private var selectedIcon = "⭐️"
-    @State private var selectedColor = "purple"
-    @State private var selectedFrequency: HabitFrequency = .daily
-    @State private var selectedDays: Set<Int> = [1, 2, 3, 4, 5, 6, 0]
-    @State private var selectedTimeOfDay: TimeOfDay? = nil
-    @State private var endHabitEnabled = false
-    @State private var endDate = Date()
-    @State private var reminderEnabled = false
-    @State private var reminderTime = Date()
+    @StateObject var viewModel: AddHabitViewModel
 
-    private let primaryPurple = Color(red: 0.42, green: 0.39, blue: 1.0)
+    init(viewModel: HabitViewModel) {
+        self.appViewModel = viewModel
+        _viewModel = StateObject(wrappedValue: AddHabitViewModel(appViewModel: viewModel))
+    }
 
     var body: some View {
         NavigationStack {
@@ -37,7 +30,7 @@ struct AddHabitView: View {
                         Text("habitName")
                             .font(.headline)
 
-                        TextField(String(localized: "habitName"), text: $name)
+                        TextField(String(localized: "habitName"), text: $viewModel.name)
                             .padding()
                             .background(Color.gray.opacity(0.1))
                             .cornerRadius(12)
@@ -53,7 +46,7 @@ struct AddHabitView: View {
                     repeatSection
 
                     // Days Selection (if custom)
-                    if selectedFrequency == .custom {
+                    if viewModel.selectedFrequency == .custom {
                         daysSection
                     }
 
@@ -62,40 +55,42 @@ struct AddHabitView: View {
 
                     // End Habit Toggle
                     VStack(spacing: 12) {
-                        Toggle(String(localized: "endHabitOn"), isOn: $endHabitEnabled)
+                        Toggle(String(localized: "endHabitOn"), isOn: $viewModel.endHabitEnabled)
                             .font(.body)
 
-                        if endHabitEnabled {
-                            DatePicker(String(localized: "endDate"), selection: $endDate, displayedComponents: .date)
+                        if viewModel.endHabitEnabled {
+                            DatePicker(String(localized: "endDate"), selection: $viewModel.endDate, displayedComponents: .date)
                                 .datePickerStyle(.compact)
                         }
                     }
 
                     // Reminder Toggle
                     VStack(spacing: 12) {
-                        Toggle(String(localized: "setReminder"), isOn: $reminderEnabled)
+                        Toggle(String(localized: "setReminder"), isOn: $viewModel.reminderEnabled)
                             .font(.body)
 
-                        if reminderEnabled {
-                            DatePicker(String(localized: "reminderTime"), selection: $reminderTime, displayedComponents: .hourAndMinute)
+                        if viewModel.reminderEnabled {
+                            DatePicker(String(localized: "reminderTime"), selection: $viewModel.reminderTime, displayedComponents: .hourAndMinute)
                                 .datePickerStyle(.compact)
                         }
                     }
 
                     // Save Button
                     Button {
-                        saveHabit()
+                        viewModel.save {
+                            dismiss()
+                        }
                     } label: {
                         Text("save")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(primaryPurple)
+                            .background(.primaryPurple)
                             .cornerRadius(16)
                     }
-                    .disabled(name.isEmpty)
-                    .opacity(name.isEmpty ? 0.5 : 1.0)
+                    .disabled(viewModel.name.isEmpty)
+                    .opacity(viewModel.name.isEmpty ? 0.5 : 1.0)
                 }
                 .padding()
             }
@@ -124,19 +119,19 @@ struct AddHabitView: View {
         HStack(spacing: 0) {
             ForEach(HabitType.allCases, id: \.self) { type in
                 Button {
-                    habitType = type
+                    viewModel.selectHabitType(type)
                 } label: {
                     Text(type.localizationKey)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundColor(habitType == type ? .white : .gray)
+                        .foregroundColor(viewModel.habitType == type ? .white : .gray)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(habitType == type ? primaryPurple : Color.white)
+                        .background(viewModel.habitType == type ? .primaryPurple : .white)
                 }
             }
         }
-        .background(Color.gray.opacity(0.1))
+        .background(.gray.opacity(0.1))
         .cornerRadius(12)
     }
 
@@ -151,24 +146,24 @@ struct AddHabitView: View {
                 Spacer()
 
                 Button {
-                    // Show icon picker
+                    // Show icon picker (future extraction)
                 } label: {
                     Text("viewAll")
                         .font(.subheadline)
-                        .foregroundColor(primaryPurple)
+                        .foregroundColor(.primaryPurple)
                 }
             }
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
-                    ForEach(sampleEmojis, id: \.self) { emoji in
+                    ForEach(viewModel.sampleEmojis, id: \.self) { emoji in
                         Button {
-                            selectedIcon = emoji
+                            viewModel.selectIcon(emoji)
                         } label: {
                             Text(emoji)
                                 .font(.system(size: 32))
                                 .frame(width: 50, height: 50)
-                                .background(selectedIcon == emoji ? primaryPurple.opacity(0.2) : Color.gray.opacity(0.1))
+                                .background(viewModel.selectedIcon == emoji ? .primaryPurple.opacity(0.2) : .gray.opacity(0.1))
                                 .cornerRadius(12)
                         }
                     }
@@ -176,8 +171,6 @@ struct AddHabitView: View {
             }
         }
     }
-
-    private let sampleEmojis = ["🏈", "🏆", "🥇", "🏀", "🏃"]
 
     // MARK: - Color Section
 
@@ -187,18 +180,18 @@ struct AddHabitView: View {
                 .font(.headline)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 16) {
-                ForEach(colorOptions, id: \.name) { option in
+                ForEach(viewModel.colorOptions, id: \.name) { option in
                     Button {
-                        selectedColor = option.name
+                        viewModel.selectColor(option.name)
                     } label: {
                         ZStack {
                             Circle()
                                 .fill(option.color)
                                 .frame(width: 50, height: 50)
 
-                            if selectedColor == option.name {
+                            if viewModel.selectedColor == option.name {
                                 Circle()
-                                    .stroke(Color.primary, lineWidth: 3)
+                                    .stroke(.primary, lineWidth: 3)
                                     .frame(width: 54, height: 54)
                             }
                         }
@@ -207,23 +200,6 @@ struct AddHabitView: View {
             }
         }
     }
-
-    private let colorOptions: [(name: String, color: Color)] = [
-        ("yellow", Color("PastelYellow")),
-        ("orange", Color("PastelOrange")),
-        ("gray", Color("PastelGray")),
-        ("brown", Color("PastelBrown")),
-        ("pink", Color("PastelPink")),
-        ("rose", Color("PastelRose")),
-        ("magenta", Color("PastelMagenta")),
-        ("lightpurple", Color("PastelLightPurple")),
-        ("purple", Color("PastelPurple")),
-        ("blue", Color("PastelBlue")),
-        ("teal", Color("PastelTeal")),
-        ("cyan", Color("PastelCyan")),
-        ("green", Color("PastelGreen")),
-        ("rainbow", Color("PastelPink"))
-    ]
 
     // MARK: - Repeat Section
 
@@ -235,21 +211,18 @@ struct AddHabitView: View {
             HStack(spacing: 12) {
                 ForEach([HabitFrequency.daily, .weekly, .custom], id: \.self) { freq in
                     Button {
-                        selectedFrequency = freq
-                        if freq == .daily {
-                            selectedDays = [0, 1, 2, 3, 4, 5, 6]
-                        }
+                        viewModel.selectFrequency(freq)
                     } label: {
                         Text(freq.localizationKey)
                             .font(.subheadline)
                             .fontWeight(.medium)
-                            .foregroundColor(selectedFrequency == freq ? .white : .primary)
+                            .foregroundColor(viewModel.selectedFrequency == freq ? .white : .primary)
                             .padding(.horizontal, 24)
                             .padding(.vertical, 10)
-                            .background(selectedFrequency == freq ? primaryPurple : Color.white)
+                            .background(viewModel.selectedFrequency == freq ? .primaryPurple : .white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 20)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                    .stroke(.gray.opacity(0.3), lineWidth: 1)
                             )
                             .cornerRadius(20)
                     }
@@ -269,56 +242,38 @@ struct AddHabitView: View {
                 Spacer()
 
                 Button {
-                    if selectedDays.count == 7 {
-                        selectedDays = []
-                    } else {
-                        selectedDays = [0, 1, 2, 3, 4, 5, 6]
-                    }
+                    viewModel.toggleAllDays()
                 } label: {
                     HStack {
                         Text("allDay")
                             .font(.subheadline)
 
-                        if selectedDays.count == 7 {
+                        if viewModel.selectedDays.count == 7 {
                             Image(systemName: "checkmark")
                                 .font(.caption)
                         }
                     }
-                    .foregroundColor(primaryPurple)
+                    .foregroundColor(.primaryPurple)
                 }
             }
 
             HStack(spacing: 8) {
-                ForEach(weekdayLabels, id: \.day) { item in
+                ForEach(viewModel.weekdayLabels, id: \.day) { item in
                     Button {
-                        if selectedDays.contains(item.day) {
-                            selectedDays.remove(item.day)
-                        } else {
-                            selectedDays.insert(item.day)
-                        }
+                        viewModel.toggleDay(item.day)
                     } label: {
                         Text(item.labelKey)
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .foregroundColor(.white)
                             .frame(width: 40, height: 40)
-                            .background(selectedDays.contains(item.day) ? primaryPurple : Color.gray.opacity(0.3))
+                            .background(viewModel.selectedDays.contains(item.day) ? .primaryPurple : .gray.opacity(0.3))
                             .clipShape(Circle())
                     }
                 }
             }
         }
     }
-
-    private let weekdayLabels: [(labelKey: LocalizedStringKey, day: Int)] = [
-        (labelKey: "weekdayS2", day: 0),
-        (labelKey: "weekdayM", day: 1),
-        (labelKey: "weekdayT", day: 2),
-        (labelKey: "weekdayW", day: 3),
-        (labelKey: "weekdayT2", day: 4),
-        (labelKey: "weekdayF", day: 5),
-        (labelKey: "weekdayS", day: 6)
-    ]
 
     // MARK: - Time of Day Section
 
@@ -330,81 +285,23 @@ struct AddHabitView: View {
             HStack(spacing: 12) {
                 ForEach([TimeOfDay.morning, .afternoon, .evening], id: \.self) { time in
                     Button {
-                        if selectedTimeOfDay == time {
-                            selectedTimeOfDay = nil
-                        } else {
-                            selectedTimeOfDay = time
-                        }
+                        viewModel.toggleTimeOfDay(time)
                     } label: {
                         Text(time.localizationKey)
                             .font(.subheadline)
                             .fontWeight(.medium)
-                            .foregroundColor(selectedTimeOfDay == time ? primaryPurple : .primary)
+                            .foregroundColor(viewModel.selectedTimeOfDay == time ? .primaryPurple : .primary)
                             .padding(.horizontal, 24)
                             .padding(.vertical, 10)
-                            .background(Color.white)
+                            .background(.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 20)
-                                    .stroke(selectedTimeOfDay == time ? primaryPurple : Color.gray.opacity(0.3), lineWidth: 2)
+                                    .stroke(viewModel.selectedTimeOfDay == time ? .primaryPurple : .gray.opacity(0.3), lineWidth: 2)
                             )
                             .cornerRadius(20)
                     }
                 }
             }
-        }
-    }
-
-    // MARK: - Save Habit
-
-    private func saveHabit() {
-        let habit = Habit(
-            name: name,
-            icon: selectedIcon,
-            color: selectedColor,
-            category: .other,
-            frequency: selectedFrequency,
-            reminderTime: reminderEnabled ? reminderTime : nil,
-            reminderEnabled: reminderEnabled,
-            targetDays: Array(selectedDays).sorted(),
-            goal: 1,
-            timeOfDay: selectedTimeOfDay
-        )
-
-        viewModel.addHabit(habit)
-        dismiss()
-    }
-}
-
-// MARK: - Habit Type Enum
-
-enum HabitType: String, CaseIterable {
-    case regular = "Regular Habit"
-    case oneTime = "One-time Task"
-
-    var localizationKey: LocalizedStringKey {
-        switch self {
-        case .regular: return "regularHabit"
-        case .oneTime: return "oneTimeTask"
-        }
-    }
-}
-
-private extension HabitFrequency {
-    var localizationKey: LocalizedStringKey {
-        switch self {
-        case .daily: return "daily"
-        case .weekly: return "weekly"
-        case .custom: return "custom"
-        }
-    }
-}
-
-private extension TimeOfDay {
-    var localizationKey: LocalizedStringKey {
-        switch self {
-        case .morning: return "morning"
-        case .afternoon: return "afternoon"
-        case .evening: return "evening"
         }
     }
 }
