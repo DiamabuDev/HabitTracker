@@ -18,9 +18,9 @@ struct Habit: Identifiable, Codable, Hashable {
     var frequency: HabitFrequency
     var reminderTime: Date?
     var reminderEnabled: Bool
-    var targetDays: [Int] // 0=Sunday, 1=Monday, etc.
+    var targetDays: [Int]
     var createdAt: Date
-    var goal: Int // How many times per frequency period
+    var goal: Int
     var timeOfDay: TimeOfDay?
 
     init(
@@ -33,7 +33,7 @@ struct Habit: Identifiable, Codable, Hashable {
         frequency: HabitFrequency = .daily,
         reminderTime: Date? = nil,
         reminderEnabled: Bool = false,
-        targetDays: [Int] = [1, 2, 3, 4, 5, 6, 0], // All days
+        targetDays: [Int] = [1, 2, 3, 4, 5, 6, 0],
         createdAt: Date = Date(),
         goal: Int = 1,
         timeOfDay: TimeOfDay? = nil
